@@ -76,7 +76,3 @@ npm install -g eas-cli
 eas build --platform android
 eas submit --platform android
 ```
-
-## License
-
-MIT
