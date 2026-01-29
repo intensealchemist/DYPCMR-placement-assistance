@@ -5,7 +5,7 @@
 // Update this with your backend URL
 // For Android emulator: use 10.0.2.2 instead of localhost
 // For physical device: use your computer's local IP address
-export const API_BASE_URL = 'https://86ddd00649f5.ngrok-free.app/api';
+export const API_BASE_URL = 'https://dypcmr-placement-assistance-83mv0drmt.vercel.app/api';
 
 // For iOS simulator or web, use localhost:
 // export const API_BASE_URL = 'http://localhost:8000/api';
