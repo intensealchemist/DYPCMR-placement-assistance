@@ -18,10 +18,22 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.intensealchemist.dypcmrplacementapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1ebac0f7-270f-46f7-ad03-560fe8dd19d9"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1ebac0f7-270f-46f7-ad03-560fe8dd19d9"
     }
   }
 }

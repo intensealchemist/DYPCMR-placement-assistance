@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { theme } from '../../theme';
+import { Logo } from '../../components/Logo';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -47,7 +48,7 @@ export default function LoginScreen({ navigation }: Props) {
     >
       <View style={styles.content}>
         <View style={styles.header}>
-            <Text style={styles.title}>DYPCMR Placement</Text>
+            <Logo width={260} />
             <Text style={styles.subtitle}>Sign in to continue</Text>
         </View>
 

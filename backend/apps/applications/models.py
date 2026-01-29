@@ -26,6 +26,12 @@ class Application(models.Model):
         ('rejected', 'Rejected'),
         ('hired', 'Hired'),
     )
+
+    SUBMISSION_STATUS_CHOICES = (
+        ('clicked', 'Clicked'),
+        ('submitted', 'Submitted'),
+        ('abandoned', 'Abandoned'),
+    )
     
     job = models.ForeignKey(
         'jobs.Job', 
@@ -52,6 +58,11 @@ class Application(models.Model):
     # Metadata
     source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='in_app')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    submission_status = models.CharField(
+        max_length=20,
+        choices=SUBMISSION_STATUS_CHOICES,
+        default='clicked'
+    )
     applied_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)

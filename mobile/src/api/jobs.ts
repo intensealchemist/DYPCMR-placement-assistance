@@ -9,13 +9,19 @@ export interface Job {
     requirements?: string;
     location: string;
     job_type: 'full_time' | 'part_time' | 'internship' | 'contract' | 'remote';
+    job_type_tags?: string[];
+    salary_min?: number | string;
+    salary_max?: number | string;
     salary_range: string;
+    experience_required?: string;
+    skills_required?: string;
     apply_type: 'google_form' | 'email' | 'in_app' | 'external';
     apply_target?: string;
     posted_at: string;
     deadline?: string;
     active: boolean;
     featured: boolean;
+    push_on_create?: boolean;
     applications_count: number;
     posted_by_name?: string;
 }
@@ -35,6 +41,10 @@ export interface ApplicationData {
     cover_letter?: string;
 }
 
+export interface ApplicationConfirmationData {
+    submission_status: 'clicked' | 'submitted' | 'abandoned';
+}
+
 export const jobsApi = {
     getJobs: async (filters?: JobFilters) => {
         const response = await apiClient.get(API_ENDPOINTS.JOBS, { params: filters });
@@ -50,6 +60,14 @@ export const jobsApi = {
         const response = await apiClient.post(
             API_ENDPOINTS.APPLY_TO_JOB(jobId),
             applicationData || {}
+        );
+        return response.data;
+    },
+
+    confirmApplication: async (applicationId: number, data: ApplicationConfirmationData) => {
+        const response = await apiClient.post(
+            API_ENDPOINTS.APPLICATION_CONFIRM(applicationId),
+            data
         );
         return response.data;
     },

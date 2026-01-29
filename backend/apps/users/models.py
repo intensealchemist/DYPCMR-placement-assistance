@@ -31,8 +31,20 @@ class User(AbstractUser):
     
     @property
     def is_admin(self):
-        return self.role in ('admin', 'super_admin')
+        return (
+            self.role in ('admin', 'super_admin')
+            or self.is_staff
+            or self.is_superuser
+        )
     
     @property
     def is_super_admin(self):
-        return self.role == 'super_admin'
+        return self.role == 'super_admin' or self.is_superuser
+
+    def save(self, *args, **kwargs):
+        # Keep role aligned with staff/superuser flags for consistency across the app
+        if self.is_superuser and self.role != 'super_admin':
+            self.role = 'super_admin'
+        elif self.is_staff and self.role == 'user':
+            self.role = 'admin'
+        super().save(*args, **kwargs)

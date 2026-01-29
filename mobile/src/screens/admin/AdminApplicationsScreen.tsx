@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Linking } from 'react-native';
+import { useSelector } from 'react-redux';
 import { jobsApi } from '../../api/jobs';
+import { Button } from '../../components/Button';
+import { RootState } from '../../store';
 import { theme } from '../../theme';
 
 interface Application {
@@ -15,7 +18,8 @@ interface Application {
     source: string;
 }
 
-export default function AdminApplicationsScreen() {
+export default function AdminApplicationsScreen({ navigation }: any) {
+  const { user } = useSelector((state: RootState) => state.auth);
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,6 +92,16 @@ export default function AdminApplicationsScreen() {
       }
   };
 
+  if (!user?.is_admin) {
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyTitle}>Access restricted</Text>
+        <Text style={styles.emptySubtitle}>Only admins can access applications.</Text>
+        <Button title="Go Back" onPress={() => navigation.goBack()} />
+      </View>
+    );
+  }
+
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -103,6 +117,14 @@ export default function AdminApplicationsScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.list}
+        ListEmptyComponent={
+          <View style={styles.emptyList}>
+            <Text style={styles.emptyListTitle}>No applications yet</Text>
+            <Text style={styles.emptyListSubtitle}>
+              Once students start applying, their submissions will appear here for review.
+            </Text>
+          </View>
+        }
       />
     </View>
   );
@@ -174,5 +196,41 @@ const styles = StyleSheet.create({
   resumeText: {
       color: theme.colors.text.light,
       fontSize: theme.typography.sizes.sm,
+  },
+  emptyList: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+  },
+  emptyListTitle: {
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.bold as any,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  emptyListSubtitle: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+    backgroundColor: theme.colors.background,
+  },
+  emptyTitle: {
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.bold as any,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  emptySubtitle: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
   },
 });

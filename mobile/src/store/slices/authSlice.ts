@@ -69,6 +69,18 @@ export const logout = createAsyncThunk(
     }
 );
 
+export const updateProfile = createAsyncThunk(
+    'auth/updateProfile',
+    async (data: Partial<User>, { rejectWithValue }) => {
+        try {
+            const user = await authApi.updateProfile(data);
+            return user;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || 'Failed to update profile');
+        }
+    }
+);
+
 // Slice
 const authSlice = createSlice({
     name: 'auth',
@@ -121,6 +133,11 @@ const authSlice = createSlice({
         builder.addCase(logout.fulfilled, (state) => {
             state.isAuthenticated = false;
             state.user = null;
+        });
+
+        // Update profile
+        builder.addCase(updateProfile.fulfilled, (state, action: PayloadAction<User>) => {
+            state.user = action.payload;
         });
     },
 });

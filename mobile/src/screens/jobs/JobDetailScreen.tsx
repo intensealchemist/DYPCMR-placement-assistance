@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchJobDetail, applyToJob, uploadResume } from '../../store/slices/jobsSlice';
+import { fetchJobDetail, applyToJob, uploadResume, confirmApplication } from '../../store/slices/jobsSlice';
 import { AppDispatch, RootState } from '../../store';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -52,12 +52,56 @@ export default function JobDetailScreen({ route, navigation }: Props) {
       setShowApplicationForm(true);
     } else {
       try {
-        const response = await dispatch(applyToJob({ jobId: job.id })).unwrap();
+        const response = await dispatch(applyToJob({
+          jobId: job.id,
+          data: applicationData.resume_url ? { resume_url: applicationData.resume_url } : undefined,
+        })).unwrap();
         
         if (response.redirect_url) {
           await Linking.openURL(response.redirect_url);
         }
-        
+
+        if (response.application_id) {
+          setTimeout(() => {
+            Alert.alert(
+              'Confirm submission',
+              'Did you complete the external application?',
+              [
+                {
+                  text: 'Skip',
+                  style: 'cancel',
+                },
+                {
+                  text: 'No',
+                  onPress: async () => {
+                    try {
+                      await dispatch(confirmApplication({
+                        applicationId: response.application_id,
+                        submission_status: 'abandoned',
+                      })).unwrap();
+                    } catch (confirmError) {
+                      Alert.alert('Error', 'Failed to update application status');
+                    }
+                  },
+                },
+                {
+                  text: 'Yes',
+                  onPress: async () => {
+                    try {
+                      await dispatch(confirmApplication({
+                        applicationId: response.application_id,
+                        submission_status: 'submitted',
+                      })).unwrap();
+                    } catch (confirmError) {
+                      Alert.alert('Error', 'Failed to update application status');
+                    }
+                  },
+                },
+              ]
+            );
+          }, 500);
+        }
+
         Alert.alert('Success', response.message || 'Application recorded');
       } catch (error: any) {
         Alert.alert('Error', error || 'Failed to apply');
@@ -264,6 +308,37 @@ export default function JobDetailScreen({ route, navigation }: Props) {
       </View>
 
       <View style={styles.applyContainer}>
+        {job.apply_type !== 'in_app' && (
+          <View style={styles.externalResumeCard}>
+            <Text style={styles.sectionTitle}>Attach Resume (Optional)</Text>
+            <Text style={styles.externalHelper}>
+              Uploading a resume will include a link in email applies and keep it available for admins.
+            </Text>
+            {applicationData.resume_url ? (
+              <View style={styles.resumePreview}>
+                <Text style={styles.resumeText} numberOfLines={1}>
+                  {applicationData.resume_url.split('/').pop()}
+                </Text>
+                <TouchableOpacity onPress={() => setApplicationData(prev => ({ ...prev, resume_url: '' }))}>
+                  <Text style={{ color: theme.colors.error }}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+            <Button
+              title={isUploading ? 'Uploading...' : 'Upload Resume (PDF/Doc)'}
+              onPress={handlePickResume}
+              variant="secondary"
+              isLoading={isUploading}
+            />
+            <Input
+              placeholder="Resume URL (optional)"
+              value={applicationData.resume_url}
+              onChangeText={(value) => setApplicationData(prev => ({ ...prev, resume_url: value }))}
+              label="Resume URL"
+              style={{ marginTop: theme.spacing.sm }}
+            />
+          </View>
+        )}
         <Button
           title="Apply Now"
           onPress={handleApply}
@@ -344,6 +419,18 @@ const styles = StyleSheet.create({
   applyContainer: {
     padding: theme.spacing.lg,
     paddingBottom: theme.spacing.xxl,
+  },
+  externalResumeCard: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.sm,
+  },
+  externalHelper: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.sm,
   },
   formContent: {
     padding: theme.spacing.lg,

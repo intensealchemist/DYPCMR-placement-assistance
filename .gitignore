@@ -17,3 +17,32 @@ yarn-error.log*
 # Misc
 tmp/
 TODO.md
+
+# Environment & secrets
+.env
+.env.*
+backend/.env
+backend/.env.*
+!backend/.env.example
+mobile/.env
+mobile/.env.*
+!mobile/.env.example
+
+# Build artifacts
+*.aab
+*.apk
+*.ipa
+*.keystore
+*.p12
+dist/
+web-build/
+coverage/
+
+# Expo / React Native caches
+.expo/
+.expo-shared/
+.gradle/
+.idea/
+.vscode/
+ios/
+android/

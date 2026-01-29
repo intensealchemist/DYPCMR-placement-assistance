@@ -146,6 +146,9 @@ CORS_ALLOWED_ORIGINS = config(
 ).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
+# Hosts
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,localhost').split(',')
+
 # Firebase (for FCM)
 FIREBASE_CREDENTIALS_PATH = config('FIREBASE_CREDENTIALS_PATH', default=None)
 

@@ -25,7 +25,7 @@ class JobListCreateView(generics.ListCreateAPIView):
     ordering = ['-posted_at']
     
     def get_queryset(self):
-        queryset = Job.objects.annotate(applications_count=Count('applications'))
+        queryset = Job.objects.annotate(applications_total=Count('applications'))
         
         # Non-admin users only see active jobs
         if not self.request.user.is_admin:
@@ -54,7 +54,7 @@ class JobDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrReadOnly]
     
     def get_queryset(self):
-        return Job.objects.annotate(applications_count=Count('applications'))
+        return Job.objects.annotate(applications_total=Count('applications'))
     
     def get_serializer_class(self):
         if self.request.method in ['PUT', 'PATCH']:
@@ -86,6 +86,7 @@ class ApplyToJobView(APIView):
     def post(self, request, pk):
         from apps.applications.models import Application
         from apps.applications.serializers import ApplicationCreateSerializer
+        from urllib.parse import quote
         
         try:
             job = Job.objects.get(pk=pk, active=True)
@@ -97,6 +98,8 @@ class ApplyToJobView(APIView):
         
         user = request.user
         
+        resume_url = request.data.get('resume_url', '') if isinstance(request.data, dict) else ''
+
         if job.apply_type == 'in_app':
             # Handle in-app application with full form data
             serializer = ApplicationCreateSerializer(data=request.data)
@@ -117,6 +120,7 @@ class ApplyToJobView(APIView):
                 job=job,
                 user=user,
                 source='in_app',
+                submission_status='submitted',
                 ip_address=self.get_client_ip(request)
             )
             
@@ -147,21 +151,39 @@ class ApplyToJobView(APIView):
                     user=user,
                     name=user.get_full_name() or user.username,
                     email=user.email,
+                    phone=user.phone or '',
                     source=source,
+                    submission_status='clicked',
+                    resume_url=resume_url or '',
                     ip_address=self.get_client_ip(request)
                 )
             else:
                 application = Application.objects.filter(
                     job=job, user=user, source=source
                 ).latest('applied_at')
+
+                if resume_url and application.resume_url != resume_url:
+                    application.resume_url = resume_url
+                    application.save(update_fields=['resume_url', 'updated_at'])
             
             # Build redirect URL
             redirect_url = job.apply_target
             if job.apply_type == 'email':
                 # Build mailto link with prefilled data
                 subject = f"Application for {job.title} at {job.company}"
-                body = f"Hi,\n\nI am interested in the {job.title} position.\n\nRegards,\n{user.get_full_name() or user.username}"
-                redirect_url = f"mailto:{job.apply_target}?subject={subject}&body={body}"
+                body = (
+                    "Hi,\n\n"
+                    f"I am interested in the {job.title} position.\n"
+                    f"Name: {user.get_full_name() or user.username}\n"
+                    f"Email: {user.email}\n"
+                    f"Phone: {user.phone or 'N/A'}\n"
+                )
+                if resume_url:
+                    body += f"\nResume: {resume_url}\n"
+                body += "\nRegards,\n" + (user.get_full_name() or user.username)
+                redirect_url = (
+                    f"mailto:{job.apply_target}?subject={quote(subject)}&body={quote(body)}"
+                )
             
             return Response({
                 'status': 'recorded',

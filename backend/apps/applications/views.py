@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from rest_framework import generics, filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import Application
@@ -13,6 +14,7 @@ from .serializers import (
     ApplicationListSerializer,
     ApplicationDetailSerializer,
     ApplicationStatusUpdateSerializer,
+    ApplicationConfirmationSerializer,
 )
 from apps.jobs.permissions import IsAdminUser
 
@@ -77,7 +79,7 @@ class ExportApplicationsCSVView(APIView):
         writer = csv.writer(response)
         writer.writerow([
             'ID', 'Job Title', 'Company', 'Applicant Name', 'Email', 'Phone',
-            'Source', 'Status', 'Applied At', 'Resume URL'
+            'Source', 'Status', 'Submission Status', 'Applied At', 'Resume URL'
         ])
         
         for app in applications:
@@ -90,6 +92,7 @@ class ExportApplicationsCSVView(APIView):
                 app.phone,
                 app.get_source_display(),
                 app.get_status_display(),
+                app.get_submission_status_display(),
                 app.applied_at.strftime('%Y-%m-%d %H:%M'),
                 app.resume_url,
             ])
@@ -136,4 +139,25 @@ class UploadResumeView(APIView):
             'url': url,
             'filename': resume_file.name,
             'size': resume_file.size
+        })
+
+
+class ApplicationConfirmationView(APIView):
+    """Confirm external application submission status."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            application = Application.objects.get(pk=pk, user=request.user)
+        except Application.DoesNotExist:
+            return Response({'error': 'Application not found'}, status=404)
+
+        serializer = ApplicationConfirmationSerializer(application, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({
+            'status': 'updated',
+            'submission_status': application.submission_status,
         })

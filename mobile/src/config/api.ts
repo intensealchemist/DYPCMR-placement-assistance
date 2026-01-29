@@ -5,7 +5,7 @@
 // Update this with your backend URL
 // For Android emulator: use 10.0.2.2 instead of localhost
 // For physical device: use your computer's local IP address
-export const API_BASE_URL = 'http://10.0.2.2:8000/api';
+export const API_BASE_URL = 'https://86ddd00649f5.ngrok-free.app/api';
 
 // For iOS simulator or web, use localhost:
 // export const API_BASE_URL = 'http://localhost:8000/api';
@@ -33,4 +33,5 @@ export const API_ENDPOINTS = {
     JOB_APPLICATIONS: (id: number) => `/applications/job/${id}/`,
     EXPORT_APPLICATIONS: '/applications/export/',
     UPLOAD_RESUME: '/applications/upload/',
+    APPLICATION_CONFIRM: (id: number) => `/applications/${id}/confirm/`,
 };

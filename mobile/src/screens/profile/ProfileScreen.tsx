@@ -51,6 +51,21 @@ export default function ProfileScreen({ navigation }: any) {
             <Text style={styles.value}>{user?.role?.toUpperCase()}</Text>
         </View>
 
+        <View style={styles.section}>
+            <Text style={styles.label}>Resume</Text>
+            {user?.resume_url ? (
+              <Text style={styles.value} numberOfLines={1}>{user.resume_url}</Text>
+            ) : (
+              <Text style={styles.value}>No resume uploaded</Text>
+            )}
+            <Button
+              title="Resume Builder"
+              onPress={() => navigation.navigate('ResumeBuilder')}
+              style={styles.resumeButton}
+              variant="secondary"
+            />
+        </View>
+
         {user?.is_admin && (
             <Button
                 title="Admin Dashboard"
@@ -119,5 +134,8 @@ const styles = StyleSheet.create({
   },
   adminButton: {
       marginTop: theme.spacing.md,
+  },
+  resumeButton: {
+      marginTop: theme.spacing.sm,
   },
 });

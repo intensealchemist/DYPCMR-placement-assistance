@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { theme } from '../../theme';
+import { Logo } from '../../components/Logo';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -73,7 +74,10 @@ export default function RegisterScreen({ navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Create Account</Text>
+        <View style={styles.header}>
+          <Logo width={220} />
+          <Text style={styles.title}>Create Account</Text>
+        </View>
 
         <Input
           placeholder="Email *"
@@ -166,11 +170,14 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
     paddingTop: theme.spacing.xxl,
   },
+  header: {
+    alignItems: 'center',
+    marginBottom: theme.spacing.xl,
+  },
   title: {
     fontSize: theme.typography.sizes.xxxl,
     fontWeight: theme.typography.weights.bold as any,
     color: theme.colors.primary,
-    marginBottom: theme.spacing.xl,
     textAlign: 'center',
   },
   button: {

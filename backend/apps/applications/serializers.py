@@ -28,8 +28,8 @@ class ApplicationListSerializer(serializers.ModelSerializer):
         model = Application
         fields = [
             'id', 'job', 'job_title', 'job_company', 'user', 'username',
-            'name', 'email', 'phone', 'source', 'status',
-            'applied_at', 'updated_at'
+            'name', 'email', 'phone', 'source', 'status', 'submission_status',
+            'applied_at', 'updated_at', 'resume_url'
         ]
 
 
@@ -45,7 +45,7 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'job', 'job_title', 'job_company', 'user', 'username',
             'name', 'email', 'phone', 'resume_url', 'cover_letter',
-            'source', 'status', 'applied_at', 'updated_at', 'ip_address', 'notes'
+            'source', 'status', 'submission_status', 'applied_at', 'updated_at', 'ip_address', 'notes'
         ]
         read_only_fields = ['id', 'job', 'user', 'source', 'applied_at', 'ip_address']
 
@@ -56,3 +56,11 @@ class ApplicationStatusUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = ['status', 'notes']
+
+
+class ApplicationConfirmationSerializer(serializers.ModelSerializer):
+    """Serializer for confirming external application submission."""
+
+    class Meta:
+        model = Application
+        fields = ['submission_status']

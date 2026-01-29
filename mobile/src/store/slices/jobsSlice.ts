@@ -68,6 +68,21 @@ export const uploadResume = createAsyncThunk(
     }
 );
 
+export const confirmApplication = createAsyncThunk(
+    'jobs/confirmApplication',
+    async (
+        { applicationId, submission_status }: { applicationId: number; submission_status: 'clicked' | 'submitted' | 'abandoned' },
+        { rejectWithValue }
+    ) => {
+        try {
+            const response = await jobsApi.confirmApplication(applicationId, { submission_status });
+            return response;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || 'Failed to confirm application');
+        }
+    }
+);
+
 // Slice
 const jobsSlice = createSlice({
     name: 'jobs',

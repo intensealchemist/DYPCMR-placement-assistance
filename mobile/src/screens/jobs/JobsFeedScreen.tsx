@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchJobs } from '../../store/slices/jobsSlice';
 import { AppDispatch, RootState } from '../../store';
 import { Job } from '../../api/jobs';
+import { Logo } from '../../components/Logo';
 
 type Props = {
   navigation: any;
@@ -85,6 +86,7 @@ export default function JobsFeedScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Logo width={220} />
         <Text style={styles.headerTitle}>Job Openings</Text>
         <View style={styles.searchContainer}>
           <TextInput
@@ -137,12 +139,14 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 15,
+    marginTop: 15,
   },
   searchContainer: {
     flexDirection: 'row',
