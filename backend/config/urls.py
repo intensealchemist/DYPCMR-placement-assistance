@@ -3,10 +3,16 @@ URL configuration for DYPCMR Placement Assistance.
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+def root(_request):
+    return JsonResponse({'status': 'ok', 'service': 'DYPCMR Placement Assistance API'})
+
 urlpatterns = [
+    path('', root, name='root'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.users.urls')),
     path('api/users/', include('apps.users.urls_users')),
