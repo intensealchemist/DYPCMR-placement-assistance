@@ -12,7 +12,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+
+
+def _as_list(value: str) -> list[str]:
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
+ALLOWED_HOSTS = _as_list(config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.vercel.app'))
 
 # Application definition
 INSTALLED_APPS = [
@@ -69,10 +75,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
-DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-}
+database_url = config('DATABASE_URL', default='')
+
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(database_url, conn_max_age=600)
+    }
+else:
+    default_sqlite_path = Path('/tmp/db.sqlite3') if os.getenv('VERCEL') else BASE_DIR / 'db.sqlite3'
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': default_sqlite_path,
+        }
+    }
+
+CSRF_TRUSTED_ORIGINS = _as_list(
+    config('CSRF_TRUSTED_ORIGINS', default='https://*.vercel.app')
+)
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
@@ -140,14 +160,13 @@ SIMPLE_JWT = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:3000,http://localhost:8081'
-).split(',')
+CORS_ALLOWED_ORIGINS = _as_list(
+    config(
+        'CORS_ALLOWED_ORIGINS',
+        default='http://localhost:3000,http://localhost:8081'
+    )
+)
 CORS_ALLOW_CREDENTIALS = True
-
-# Hosts
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='.vercel.app,127.0.0.1,localhost').split(',')
 
 # Firebase (for FCM)
 FIREBASE_CREDENTIALS_PATH = config('FIREBASE_CREDENTIALS_PATH', default=None)
