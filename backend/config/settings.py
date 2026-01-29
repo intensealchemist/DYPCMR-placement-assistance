@@ -76,13 +76,23 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 database_url = config('DATABASE_URL', default='')
+default_sqlite_path = Path('/tmp/db.sqlite3') if os.getenv('VERCEL') else BASE_DIR / 'db.sqlite3'
 
 if database_url:
-    DATABASES = {
-        'default': dj_database_url.parse(database_url, conn_max_age=600)
-    }
+    try:
+        DATABASES = {
+            'default': dj_database_url.parse(database_url, conn_max_age=600)
+        }
+    except Exception as e:
+        import logging
+        logging.warning(f"Failed to parse DATABASE_URL: {e}. Falling back to SQLite.")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': default_sqlite_path,
+            }
+        }
 else:
-    default_sqlite_path = Path('/tmp/db.sqlite3') if os.getenv('VERCEL') else BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
