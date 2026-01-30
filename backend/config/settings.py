@@ -187,13 +187,21 @@ SIMPLE_JWT = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = _as_list(
-    config(
-        'CORS_ALLOWED_ORIGINS',
-        default='http://localhost:3000,http://localhost:8081'
-    )
-)
+# Allow all origins for mobile app support
+# React Native apps don't send a proper Origin header
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # Firebase (for FCM)
 FIREBASE_CREDENTIALS_PATH = config('FIREBASE_CREDENTIALS_PATH', default=None)
