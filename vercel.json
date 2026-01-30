@@ -1,14 +1,16 @@
 {
     "version": 2,
-    "functions": {
-        "backend/**/*.py": {
-            "runtime": "python3.9"
-        }
-    },
-    "rewrites": [
+    "builds": [
         {
-            "source": "/(.*)",
-            "destination": "/backend/config/wsgi.py"
+            "src": "backend/config/wsgi.py",
+            "use": "@vercel/python"
+        }
+    ],
+    "buildCommand": "bash backend/build_files.sh",
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "backend/config/wsgi.py"
         }
     ]
 }
