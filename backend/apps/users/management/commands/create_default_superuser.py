@@ -27,6 +27,7 @@ class Command(BaseCommand):
             return
         
         User.objects.create_superuser(
+            username=email.split('@')[0],  # Use email prefix as username
             email=email,
             password=password,
             first_name='Admin',
