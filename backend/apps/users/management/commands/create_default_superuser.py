@@ -15,18 +15,34 @@ class Command(BaseCommand):
         
         email = config('DJANGO_SUPERUSER_EMAIL', default='')
         password = config('DJANGO_SUPERUSER_PASSWORD', default='')
-        
+        username = email.split('@')[0] if email else ''
+
         if not email or not password:
             self.stdout.write(self.style.WARNING(
                 'DJANGO_SUPERUSER_EMAIL and DJANGO_SUPERUSER_PASSWORD not set. Skipping superuser creation.'
             ))
+            if username:
+                self.stdout.write(self.style.WARNING(f'Expected admin username: {username}'))
             return
-        
-        if User.objects.filter(email=email).exists():
-            self.stdout.write(self.style.SUCCESS(f'Superuser with email {email} already exists.'))
+
+        existing_user = User.objects.filter(email=email).first()
+        if existing_user:
+            self.stdout.write(self.style.SUCCESS(f'User with email {email} already exists.'))
+            self.stdout.write(self.style.SUCCESS(f'Existing username: {existing_user.username}'))
+            self.stdout.write(self.style.SUCCESS(
+                f'is_staff: {existing_user.is_staff}, is_superuser: {existing_user.is_superuser}'
+            ))
             return
-        
-        username = email.split('@')[0]
+
+        existing_username = User.objects.filter(username=username).first()
+        if existing_username:
+            self.stdout.write(self.style.WARNING(
+                f'Username {username} already exists with email {existing_username.email}.'
+            ))
+            self.stdout.write(self.style.WARNING(
+                'Update DJANGO_SUPERUSER_EMAIL or delete the existing user.'
+            ))
+            return
         User.objects.create_superuser(
             username=username,
             email=email,
