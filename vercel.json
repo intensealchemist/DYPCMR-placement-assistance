@@ -4,5 +4,6 @@
             "source": "/(.*)",
             "destination": "/backend/config/wsgi.py"
         }
-    ]
+    ],
+    "outputDirectory": "staticfiles"
 }
