@@ -14,8 +14,18 @@ from .serializers import (
     UserProfileUpdateSerializer,
     FCMTokenSerializer,
 )
+from .auth_serializers import EmailOrUsernameTokenObtainPairSerializer
 
 User = get_user_model()
+
+
+class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
+    """
+    JWT token view that accepts email or username.
+    Explicitly disable authentication to avoid 401s if a bad token is sent.
+    """
+    serializer_class = EmailOrUsernameTokenObtainPairSerializer
+    authentication_classes = []
 
 
 class RegisterView(generics.CreateAPIView):
@@ -23,6 +33,7 @@ class RegisterView(generics.CreateAPIView):
     
     queryset = User.objects.all()
     permission_classes = [AllowAny]
+    authentication_classes = []  # Ignore any bad tokens sent by client
     serializer_class = UserRegistrationSerializer
     
     def create(self, request, *args, **kwargs):

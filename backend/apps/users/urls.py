@@ -2,15 +2,9 @@
 Auth URL configuration (login, register, token refresh).
 """
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 
-from .views import RegisterView
-from .auth_serializers import EmailOrUsernameTokenObtainPairSerializer
-
-
-class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
-    """JWT token view that accepts email or username."""
-    serializer_class = EmailOrUsernameTokenObtainPairSerializer
+from .views import RegisterView, EmailOrUsernameTokenObtainPairView
 
 
 urlpatterns = [
