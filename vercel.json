@@ -1,9 +1,13 @@
 {
+    "functions": {
+        "backend/**/*.py": {
+            "runtime": "python3.11"
+        }
+    },
     "rewrites": [
         {
             "source": "/(.*)",
             "destination": "/backend/config/wsgi.py"
         }
-    ],
-    "outputDirectory": "staticfiles"
+    ]
 }

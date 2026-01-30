@@ -1,6 +1,7 @@
 """
 Django settings for DYPCMR Placement Assistance.
 """
+import logging
 import os
 from pathlib import Path
 from datetime import timedelta
@@ -19,6 +20,28 @@ def _as_list(value: str) -> list[str]:
 
 
 ALLOWED_HOSTS = _as_list(config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.vercel.app'))
+
+
+def _has_postgres_driver() -> bool:
+    try:
+        import psycopg  # type: ignore  # pragma: no cover
+        return True
+    except ImportError:
+        try:
+            import psycopg2  # type: ignore  # pragma: no cover
+            return True
+        except ImportError:
+            return False
+
+
+default_sqlite_path = Path('/tmp/db.sqlite3') if os.getenv('VERCEL') else BASE_DIR / 'db.sqlite3'
+
+
+def _sqlite_db_config() -> dict[str, object]:
+    return {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': default_sqlite_path,
+    }
 
 # Application definition
 INSTALLED_APPS = [
@@ -76,29 +99,23 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 database_url = config('DATABASE_URL', default='')
-default_sqlite_path = Path('/tmp/db.sqlite3') if os.getenv('VERCEL') else BASE_DIR / 'db.sqlite3'
 
 if database_url:
     try:
-        DATABASES = {
-            'default': dj_database_url.parse(database_url, conn_max_age=600)
-        }
-    except Exception as e:
-        import logging
-        logging.warning(f"Failed to parse DATABASE_URL: {e}. Falling back to SQLite.")
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': default_sqlite_path,
-            }
-        }
+        parsed_db = dj_database_url.parse(database_url, conn_max_age=600)
+        engine = parsed_db.get('ENGINE', '')
+        if engine.endswith('postgresql') and not _has_postgres_driver():
+            logging.warning('PostgreSQL driver unavailable. Falling back to SQLite.')
+            parsed_db = _sqlite_db_config()
+    except Exception as exc:  # pragma: no cover - defensive for malformed URLs
+        logging.warning(f"Failed to parse DATABASE_URL: {exc}. Falling back to SQLite.")
+        parsed_db = _sqlite_db_config()
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': default_sqlite_path,
-        }
-    }
+    parsed_db = _sqlite_db_config()
+
+DATABASES = {
+    'default': parsed_db
+}
 
 CSRF_TRUSTED_ORIGINS = _as_list(
     config('CSRF_TRUSTED_ORIGINS', default='https://*.vercel.app')
