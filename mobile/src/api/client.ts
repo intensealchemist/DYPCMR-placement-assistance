@@ -13,7 +13,12 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
     async (config) => {
         const token = await AsyncStorage.getItem('access_token');
-        if (token) {
+
+        // Don't send token for auth endpoints (login, register, refresh)
+        // This prevents 401 errors if the stored token is invalid/expired
+        const isAuthRequest = config.url?.includes('/auth/');
+
+        if (token && !isAuthRequest) {
             config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
