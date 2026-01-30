@@ -26,12 +26,16 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Superuser with email {email} already exists.'))
             return
         
+        username = email.split('@')[0]
         User.objects.create_superuser(
-            username=email.split('@')[0],  # Use email prefix as username
+            username=username,
             email=email,
             password=password,
             first_name='Admin',
             last_name='User',
             role='admin'
         )
-        self.stdout.write(self.style.SUCCESS(f'Superuser created: {email}'))
+        self.stdout.write(self.style.SUCCESS(f'Superuser created successfully!'))
+        self.stdout.write(self.style.SUCCESS(f'Username: {username}'))
+        self.stdout.write(self.style.SUCCESS(f'Email: {email}'))
+        self.stdout.write(self.style.SUCCESS(f'Password: (hidden in logs, check DJANGO_SUPERUSER_PASSWORD env var)'))
