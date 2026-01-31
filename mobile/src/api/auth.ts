@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, API_BASE_URL } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface LoginCredentials {
@@ -32,18 +32,28 @@ export interface User {
 
 export const authApi = {
     login: async (credentials: LoginCredentials) => {
-        const response = await apiClient.post(API_ENDPOINTS.LOGIN, credentials);
-        const { access, refresh } = response.data;
+        console.log('[DEBUG] Attempting login with:', { username: credentials.username });
+        console.log('[DEBUG] API URL:', API_BASE_URL + '/' + API_ENDPOINTS.LOGIN);
 
-        // Store tokens
-        await AsyncStorage.setItem('access_token', access);
-        await AsyncStorage.setItem('refresh_token', refresh);
+        try {
+            const response = await apiClient.post(API_ENDPOINTS.LOGIN, credentials);
+            console.log('[DEBUG] Login response:', response.status, response.data);
+            const { access, refresh } = response.data;
 
-        // Fetch and store user profile
-        const userResponse = await apiClient.get(API_ENDPOINTS.ME);
-        await AsyncStorage.setItem('user', JSON.stringify(userResponse.data));
+            // Store tokens
+            await AsyncStorage.setItem('access_token', access);
+            await AsyncStorage.setItem('refresh_token', refresh);
 
-        return userResponse.data;
+            // Fetch and store user profile
+            const userResponse = await apiClient.get(API_ENDPOINTS.ME);
+            await AsyncStorage.setItem('user', JSON.stringify(userResponse.data));
+
+            return userResponse.data;
+        } catch (error: any) {
+            console.log('[DEBUG] Login error:', error.message);
+            console.log('[DEBUG] Error response:', error.response?.status, error.response?.data);
+            throw error;
+        }
     },
 
     register: async (data: RegisterData) => {
