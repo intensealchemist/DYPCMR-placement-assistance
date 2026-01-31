@@ -102,7 +102,7 @@ database_url = config('DATABASE_URL', default='')
 
 if database_url:
     try:
-        parsed_db = dj_database_url.parse(database_url, conn_max_age=600)
+        parsed_db = dj_database_url.parse(database_url, conn_max_age=0)
         engine = parsed_db.get('ENGINE', '')
         if engine.endswith('postgresql') and not _has_postgres_driver():
             logging.warning('PostgreSQL driver unavailable. Falling back to SQLite.')
